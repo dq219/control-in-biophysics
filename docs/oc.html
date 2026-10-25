@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Optimal Control</title>
+  <meta name="description" content="Interactive bang-bang optimal control of protein aggregation by drugs targeting primary or secondary nucleation, companion to the review Control of biophysical dynamics across scales.">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="assets/style.css">
+  <script>try { if (localStorage.getItem("cb.theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/plotly.js-cartesian-dist-min@2.35.2/plotly-cartesian.min.js"></script>
+  <script defer src="assets/common.js"></script>
+  <script defer src="assets/oc.js"></script>
+  <style>
+    /* drug-specific blocks of the page */
+    body[data-drug="primary"] .only-secondary,
+    body[data-drug="secondary"] .only-primary { display: none; }
+  </style>
+</head>
+<body data-drug="primary">
+  <header class="site-header">
+    <a class="site-title" href="index.html">Control in biophysics</a>
+    <nav class="tabs" id="tabs" aria-label="Frameworks"></nav>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Model and parameters"></aside>
+
+    <main class="main">
+      <section class="page-intro">
+        <p>Fibril mass grows as $\dot{y}=\alpha[u]+\kappa[u]\,y$, and the cost $J=\int_{0}^{T}(y+\zeta u)\,\dd t$ weighs aggregate against drug toxicity. Bang-bang dosing gives $u(t)=u_{\text{max}}$ for $T_{1}&lt;t&lt;T_{2}$ and $u(t)=0$ otherwise.
+          <span class="only-primary">A drug targeting primary nucleation has $\alpha[u]=\alpha_{0}/(1+K^{\text{eq}}_{1}u)^{n_{1}}$ and $\kappa=\kappa_{0}$, and the optimum is $T_{1}=0$, $T_{2}=T-\kappa_{0}^{-1}\ln[\zeta u_{\text{max}}\kappa_{0}/(\alpha_{0}-\alpha)]$.</span>
+          <span class="only-secondary">A drug targeting secondary nucleation has $\kappa[u]=\kappa_{0}/(1+K^{\text{eq}}_{2}u)^{n_{2}/2}$ and $\alpha=\alpha_{0}$, and the optimum is a window of length $\Delta T=\frac{\kappa_{0}}{\kappa_{0}-\kappa}\big[T-\kappa_{0}^{-1}\ln\frac{\zeta u_{\text{max}}\kappa_{0}^{2}}{\alpha_{0}(\kappa_{0}-\kappa)}\big]$ centred in $[0,T]$.</span>
+        </p>
+      </section>
+
+      <section class="card">
+        <div class="legend" id="legend"></div>
+        <div class="plot-main" id="plot-main"></div>
+      </section>
+
+      <div class="row2">
+        <section class="card">
+          <h3>Cost landscape</h3>
+          <p class="hint">Total cost $J$ for every dosing window $[T_{1},T_{2}]$ under the current parameters. ★ marks the analytical optimum.</p>
+          <div class="plot-poles" id="plot-landscape"></div>
+        </section>
+        <section class="card">
+          <h3>Comparison</h3>
+          <div class="metrics-wrap" id="metrics"></div>
+        </section>
+      </div>
+
+      <footer class="site-footer">
+        Companion to <em>Control of biophysical dynamics across scales</em>.
+        Source notebook: <a href="https://github.com/dq219/control-in-biophysics/tree/main/OptimalControl">OptimalControl/</a>.
+      </footer>
+    </main>
+  </div>
+</body>
+</html>

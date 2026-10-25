@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Reinforcement Learning</title>
+  <meta name="description" content="Adaptive cancer therapy: continuous therapy, AT50, a pre-trained reinforcement-learning agent and your own threshold rule, companion to the review Control of biophysical dynamics across scales.">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="assets/style.css">
+  <script>try { if (localStorage.getItem("cb.theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js"></script>
+  <script defer src="assets/common.js"></script>
+  <script defer src="rl/agents.js"></script>
+  <script defer src="assets/rl.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-title" href="index.html">Control in biophysics</a>
+    <nav class="tabs" id="tabs" aria-label="Frameworks"></nav>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Model and parameters"></aside>
+
+    <main class="main">
+      <section class="page-intro">
+        <p>Drug-sensitive and resistant tumour cells compete for space: $\dot{S}=r_{S}S(1-N/K)(1-d_{D}D)-d_{S}S$ and $\dot{R}=r_{R}R(1-N/K)-d_{R}R$, with $N=S+R$. Each week the dose $D\in\{0,1\}$ is chosen from $N$ alone, and the tumour progresses once $N\geq(1+\kappa)N(0)$. Continuous therapy always treats, AT50 stops at $N=0.5N(0)$ and restarts at $N(0)$, the agent was trained offline, and your rule uses thresholds of your choice.</p>
+      </section>
+
+      <section class="card">
+        <div class="legend" id="legend"></div>
+        <div class="plot-main" id="plot-main"></div>
+      </section>
+
+      <div class="row2">
+        <section class="card">
+          <h3>Learned policy</h3>
+          <p class="hint">Probability that the agent treats in the coming week, given the tumour size and whether it is currently treating (solid) or on holiday (dashed). It treats when this is above one half. Your rule is in blue. The dashed vertical line is the progression size.</p>
+          <div class="plot-poles" id="plot-policy"></div>
+        </section>
+        <section class="card">
+          <h3>Comparison</h3>
+          <div class="metrics-wrap" id="metrics"></div>
+        </section>
+      </div>
+
+      <footer class="site-footer">
+        Companion to <em>Control of biophysical dynamics across scales</em>.
+        Source notebook: <a href="https://github.com/dq219/control-in-biophysics/tree/main/ReinforcementLearning">ReinforcementLearning/</a>.
+        The agents are trained by <a href="https://github.com/dq219/control-in-biophysics/blob/main/docs/rl/train_agents.py">docs/rl/train_agents.py</a>.
+      </footer>
+    </main>
+  </div>
+</body>
+</html>

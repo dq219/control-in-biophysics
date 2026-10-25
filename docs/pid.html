@@ -7,6 +7,7 @@
   <meta name="description" content="Interactive PID feedback control: a linearised toy model and the artificial pancreas, companion to the review Control of biophysical dynamics across scales.">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
   <link rel="stylesheet" href="assets/style.css">
+  <script>try { if (localStorage.getItem("cb.theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}</script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js"></script>
@@ -20,7 +21,7 @@
 </head>
 <body data-model="toy">
   <header class="site-header">
-    <a class="site-title" href="index.html">Control in biophysics <em>· interactive companion</em></a>
+    <a class="site-title" href="index.html">Control in biophysics</a>
     <nav class="tabs" id="tabs" aria-label="Frameworks"></nav>
   </header>
 
@@ -29,8 +30,7 @@
 
     <main class="main">
       <section class="page-intro">
-        <h1>Feedback control</h1>
-        <p class="only-toy">A linearised plant held at its set point by a PID controller. Adjust the plant and the gains, then save sets to compare how each term shapes the response to a pulse or a sustained disturbance.</p>
+        <p class="only-toy">The control is calculated as $u(t)=c_{\text{P}}\,\epsilon(t)+c_{\text{I}}\int_{0}^{t}\epsilon(t')\,\dd t'+c_{\text{D}}\,\dot{\epsilon}(t)$, with error $\epsilon(t)\equiv y^{*}-y(t)$ between the set point and the state.</p>
         <p class="only-glucose">The artificial pancreas: blood glucose is read every 5 minutes and insulin is dosed by a discrete PID controller tuned from an identified SOPTD model. Compare meal and lost-sensitivity scenarios, and see what the integral term buys and costs.</p>
       </section>
 
@@ -52,73 +52,6 @@
           <div class="metrics-wrap" id="metrics"></div>
         </section>
       </div>
-
-      <section class="card theory" id="theory">
-        <h3>Theory</h3>
-        <p class="ref">Notation follows Sec. 2 (Feedback control) of the review.</p>
-
-        <h4>The PID controller</h4>
-        <p>The controller keeps a state $y(t)$ at the set value $y^{*}$ using only the error signal</p>
-        $$\epsilon(t)\equiv y^{*}-y(t),$$
-        <p>its integral and its time derivative:</p>
-        $$u(t)=c_{\text{P}}\epsilon(t)+c_{\text{I}}\int_{0}^{t}\epsilon(t')\dd t'+c_{\text{D}}\dot{\epsilon}(t).$$
-        <p>No model of how $y$ evolves is needed, which is why PID control is model-agnostic.</p>
-
-        <div class="only-toy">
-          <h4>Linearised error dynamics</h4>
-          <p>For $\dot{y}(t)=f(y,u)+\eta(t)$ with $f(y^{*},0)=0$, expanding to first order about the set point gives</p>
-          $$\dot{\epsilon}(t)\approx f_{y}\epsilon(t)-f_{u}u(t)-\eta(t),$$
-          <p>with $f_{y}\equiv\partial f/\partial y$ and $f_{u}\equiv\partial f/\partial u$ evaluated at $y=y^{*}$, $u=0$. This is the system simulated here.</p>
-
-          <h4>Proportional term</h4>
-          <p>With $c_{\text{I}}=c_{\text{D}}=0$,</p>
-          $$\dot{\epsilon}(t)=(f_{y}-f_{u}c_{\text{P}})\epsilon(t)-\eta(t).$$
-          <p>The error decays with characteristic time $-1/(f_{y}-f_{u}c_{\text{P}})$. For white noise $\langle\eta(t)\eta(t')\rangle=\Gamma\delta(t-t')$ the error settles to a Gaussian of variance $\Gamma/[2(f_{u}c_{\text{P}}-f_{y})]$. A slow disturbance leaves a residual offset</p>
-          $$\epsilon(t)\approx\frac{\eta(t)}{f_{y}-f_{u}c_{\text{P}}},$$
-          <p>so the P term alone cannot cancel a sustained perturbation. Try the step disturbance with the I switch off.</p>
-
-          <h4>Integral term</h4>
-          <p>Differentiating once more, for $c_{\text{I}}\neq0$,</p>
-          $$\ddot{\epsilon}(t)=(f_{y}-f_{u}c_{\text{P}})\dot{\epsilon}(t)-f_{u}c_{\text{I}}\epsilon(t)-\dot{\eta}(t).$$
-          <p>When $\dot\eta\approx0$ this is a damped harmonic oscillator with modes</p>
-          $$\lambda_{\pm}=\frac{f_{y}-f_{u}c_{\text{P}}}{2}\pm\sqrt{\left(\frac{f_{y}-f_{u}c_{\text{P}}}{2}\right)^{2}-f_{u}c_{\text{I}}}.$$
-          <p>At $c_{\text{I}}=0$ one mode is $\lambda_{+}=0$, the offset that survives P control. Increasing $f_{u}c_{\text{I}}$ makes the loop overdamped, then critically damped at $f_{u}c_{\text{I}}=[(f_{y}-f_{u}c_{\text{P}})/2]^{2}$, then underdamped.</p>
-
-          <h4>Derivative term</h4>
-          $$(1+f_{u}c_{\text{D}})\ddot{\epsilon}(t)=(f_{y}-f_{u}c_{\text{P}})\dot{\epsilon}(t)-f_{u}c_{\text{I}}\epsilon(t)-\dot{\eta}(t).$$
-          <p>$c_{\text{D}}$ adds no new mode. It rescales the effective inertia of the oscillator, slowing and damping the response.</p>
-        </div>
-
-        <div class="only-glucose">
-          <h4>Identified glucose–insulin dynamics</h4>
-          <p>Glucose is sampled every $\Delta t=5$ min, $y_{k}\equiv y(k\Delta t)$, measured in mg/dL from the target. The identified discrete transfer function from insulin to glucose is</p>
-          $$\bar{G}(z)=\frac{-0.25z^{-3}}{(1-0.98z^{-1})(1-0.75z^{-1})^{2}},$$
-          <p>which corresponds to the update</p>
-          $$y_{k}=\alpha_{1}y_{k-1}+\alpha_{2}y_{k-2}+\alpha_{3}y_{k-3}+\beta_{3}u_{k-3}+\eta_{k},$$
-          <p>with $\alpha_{1}=2.48$, $\alpha_{2}=-2.0325$, $\alpha_{3}=0.55125$ and $\beta_{3}=-0.25$ (mg/dL)/(TDI/hr). Here $u_k$ is the insulin rate in TDI/hr (plotted per 5 min) and $\eta_{k}$ is glucose intake not captured by $\bar{G}$.</p>
-
-          <h4>SOPTD model and controller tuning</h4>
-          <p>Pole matching with $z=e^{\Delta t s}$, steady-state gain matching, and Skogestad's half rule give a second-order-plus-time-delay model (times in minutes):</p>
-          $$G(s)=\frac{Ke^{-\theta s}}{(1+\tau_{1}s)(1+\tau_{2}s)}\approx\frac{-200e^{-11s}}{(1+247s)(1+26s)}.$$
-          <p>Requiring the ideal closed-loop response $Y(s)/Y^{*}(s)=e^{-\theta s}/(1+\tau_{\text{c}}s)$ fixes the gains:</p>
-          $$c_{\text{P}}=\frac{\tau_{1}+\tau_{2}}{K(\tau_{\text{c}}+\theta)},\qquad c_{\text{I}}=\frac{1}{K(\tau_{\text{c}}+\theta)},\qquad c_{\text{D}}=\frac{\tau_{1}\tau_{2}}{K(\tau_{\text{c}}+\theta)}.$$
-          <p>$\tau_{\text{c}}$ trades speed for robustness. Typical values are 40 to 150 min.</p>
-
-          <h4>Discrete (velocity-form) controller</h4>
-          $$u_{k}=u_{k-1}+\Delta P_{k}+\Delta I_{k}+\Delta D_{k},$$
-          $$\Delta P_{k}\equiv c_{\text{P}}(\epsilon_{k}-\epsilon_{k-1}),\quad \Delta I_{k}\equiv c_{\text{I}}\epsilon_{k}\Delta t,\quad \Delta D_{k}\equiv c_{\text{D}}(\epsilon_{k}-2\epsilon_{k-1}+\epsilon_{k-2})/\Delta t,$$
-          <p>with $\epsilon_{k}\equiv y_{k}^{*}-y_{k}$ and $y_{k}^{*}=0$. Because insulin cannot be removed, $u_k$ is clipped at zero.</p>
-
-          <h4>Closed-loop poles</h4>
-          <p>Combining the plant and the controller (without clipping or filtering), the closed-loop poles are the roots of</p>
-          $$(1-z^{-1})\bigl(1-\alpha_{1}z^{-1}-\alpha_{2}z^{-2}-\alpha_{3}z^{-3}\bigr)+\beta_{3}z^{-3}Q(z^{-1})=0,$$
-          $$Q(z^{-1})=c_{\text{P}}(1-z^{-1})+c_{\text{I}}\Delta t+c_{\text{D}}(1-z^{-1})^{2}/\Delta t.$$
-          <p class="ref">This characteristic equation is derived for this page and does not appear in the review. Without the I term, $z=1$ is always a root: insulin holds its last value and never relaxes.</p>
-
-          <h4>Practical considerations</h4>
-          <p><strong>Integral windup.</strong> A meal always raises glucose, so the integral error builds up. The resulting extra insulin can push glucose below target, so compare the undershoot of PID with PD. <strong>Filtered derivative.</strong> With sensor noise $\sigma&gt;0$ the $\Delta D_k$ term amplifies fluctuations. The filter replaces it by $\beta\Delta D_{k-1}+(1-\beta)\Delta D_k$. <strong>Parameter drift.</strong> The sensitivity $s$ scales the plant's $\beta_3$ while the controller keeps its nominal gains. This mimics the drift that motivates gain scheduling and adaptive PID.</p>
-        </div>
-      </section>
 
       <footer class="site-footer">
         Companion to <em>Control of biophysical dynamics across scales</em>.

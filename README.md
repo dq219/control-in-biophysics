@@ -11,4 +11,6 @@ Python notebooks accompanying the review *Control of biophysical dynamics across
 
 Run the notebooks with a standard scientific Python stack (`numpy`, `scipy`, `matplotlib`; `torch` for the RL example, and `casadi` for the optimal control example).
 
+Web-based visualiser is contained in the `docs/` folder, accessible via the link https://dq219.github.io/control-in-biophysics/.
+
 Released under the [MIT License](LICENSE).

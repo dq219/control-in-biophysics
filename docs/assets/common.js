@@ -7,15 +7,16 @@
 
   const TABS = [
     { id: "pid", label: "Feedback (PID)", href: "pid.html" },
-    { id: "oc", label: "Optimal control", href: "oc.html", soon: true },
+    { id: "oc", label: "Optimal control", href: "oc.html" },
     { id: "mpc", label: "Model predictive control", href: "mpc.html", soon: true },
-    { id: "rl", label: "Reinforcement learning", href: "rl.html", soon: true },
+    { id: "rl", label: "Reinforcement learning", href: "rl.html" },
   ];
 
   function renderTabs(active) {
     const nav = document.getElementById("tabs");
     if (!nav) return;
     nav.innerHTML = "";
+    renderThemeToggle();
     for (const t of TABS) {
       const el = document.createElement(t.soon ? "span" : "a");
       el.textContent = t.label;
@@ -28,6 +29,37 @@
       }
       nav.appendChild(el);
     }
+  }
+
+  // ---------- light / dark theme ----------
+  // The saved choice is applied by a one-line script in each page's <head> (no flash);
+  // this adds the toggle button and fires "themechange" so pages can redraw plots.
+
+  const THEME_KEY = "cb.theme";
+
+  function renderThemeToggle() {
+    const nav = document.getElementById("tabs");
+    if (!nav || nav.parentElement.classList.contains("header-right")) return;
+    const wrap = document.createElement("div");
+    wrap.className = "header-right";
+    nav.replaceWith(wrap);
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "theme-toggle";
+    const label = () => {
+      const dark = document.documentElement.dataset.theme === "dark";
+      btn.textContent = dark ? "☀ Light" : "☾ Dark";
+      btn.title = dark ? "Switch to light mode" : "Switch to dark mode";
+    };
+    btn.addEventListener("click", () => {
+      const next = document.documentElement.dataset.theme === "dark" ? "light" : "dark";
+      document.documentElement.dataset.theme = next;
+      try { localStorage.setItem(THEME_KEY, next); } catch (e) { /* ignore */ }
+      label();
+      window.dispatchEvent(new Event("themechange"));
+    });
+    label();
+    wrap.append(nav, btn);
   }
 
   // ---------- maths ----------
@@ -99,7 +131,12 @@
     if (!isFinite(x)) return String(x);
     if (x === 0) return "0";
     const ax = Math.abs(x);
-    if (ax >= 1e4 || ax < 1e-3) return x.toExponential(digits - 1);
+    if (ax >= 1e4 || ax < 1e-3) {
+      // m × 10ⁿ with a superscript exponent
+      const [m, e] = x.toExponential(digits - 1).split("e");
+      const sup = { "-": "⁻", "0": "⁰", "1": "¹", "2": "²", "3": "³", "4": "⁴", "5": "⁵", "6": "⁶", "7": "⁷", "8": "⁸", "9": "⁹" };
+      return `${Number(m)}×10${String(parseInt(e, 10)).replace(/./g, (c) => sup[c])}`;
+    }
     return Number(x.toPrecision(digits)).toString();
   }
 
@@ -151,7 +188,7 @@
     head.className = "ctrl-head";
     const lab = document.createElement("label");
     lab.className = "ctrl-label";
-    tex(lab, spec.label + (spec.unit ? `\\;\\text{\\small(${spec.unit})}` : ""));
+    tex(lab, spec.label + (spec.unit ? `\\;\\text{(${spec.unit})}` : ""));
     const num = document.createElement("input");
     num.type = "number";
     num.step = "any";
@@ -228,5 +265,200 @@
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 0);
   }
 
-  window.CB = { renderTabs, rng, polyRoots, fmt, cssVar, randomColour, store, tex, slider, select, checkbox, download };
+  // ---------- small sidebar pieces ----------
+
+  function heading(text) {
+    const h = document.createElement("h2");
+    h.textContent = text;
+    return h;
+  }
+
+  function segmented(options, value, onPick) {
+    const div = document.createElement("div");
+    div.className = "segmented";
+    for (const [v, label] of options) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.textContent = label;
+      if (v === value) b.className = "on";
+      b.addEventListener("click", () => onPick(v));
+      div.appendChild(b);
+    }
+    return div;
+  }
+
+  function button(text, onClick, cls) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "btn" + (cls ? " " + cls : "");
+    b.textContent = text;
+    b.addEventListener("click", onClick);
+    return b;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
+  }
+
+  // ---------- saved parameter sets ----------
+  // A set is {id, name, colour, visible, params}. Lists are edited in place.
+
+  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+  // reserved: [{h}] hues kept clear of, e.g. the current run's colour
+  function addSavedSet(list, params, reserved = []) {
+    const colour = randomColour([...list.map((s) => s.colour), ...reserved]);
+    const set = { id: newId(), name: `Set ${list.length + 1}`, colour, visible: true, params: { ...params } };
+    list.push(set);
+    return set;
+  }
+
+  // opts: {onChange(), onLoad(set), summary(set) -> string, reserved: [{h}]}
+  function renderSavedList(ul, list, opts) {
+    ul.innerHTML = "";
+    if (!list.length) {
+      const li = document.createElement("li");
+      li.className = "empty";
+      li.style.display = "block";
+      li.textContent = "Nothing saved yet. Saved sets stay on the plots in their own colour.";
+      ul.appendChild(li);
+      return;
+    }
+    for (const s of list) {
+      const li = document.createElement("li");
+      if (!s.visible) li.className = "hidden-set";
+      const vis = document.createElement("input");
+      vis.type = "checkbox";
+      vis.checked = s.visible;
+      vis.title = "Show on plots";
+      vis.addEventListener("change", () => { s.visible = vis.checked; opts.onChange(); });
+      const sw = document.createElement("button");
+      sw.className = "swatch";
+      sw.style.background = s.colour.css;
+      sw.title = "New random colour";
+      sw.addEventListener("click", () => {
+        s.colour = randomColour([...list.filter((o) => o !== s).map((o) => o.colour), ...(opts.reserved || [])]);
+        opts.onChange();
+      });
+      const name = document.createElement("input");
+      name.type = "text";
+      name.value = s.name;
+      name.addEventListener("change", () => { s.name = name.value || s.name; opts.onChange(); });
+      const acts = document.createElement("span");
+      const load = document.createElement("button");
+      load.className = "icon-btn";
+      load.textContent = "load";
+      load.title = "Copy these parameters into the current set";
+      load.addEventListener("click", () => opts.onLoad(s));
+      const del = document.createElement("button");
+      del.className = "icon-btn del";
+      del.textContent = "✕";
+      del.title = "Delete";
+      del.addEventListener("click", () => {
+        list.splice(list.indexOf(s), 1);
+        opts.onChange();
+      });
+      acts.append(load, del);
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = opts.summary(s);
+      li.append(vis, sw, name, acts, meta);
+      ul.appendChild(li);
+    }
+  }
+
+  // Ask for a JSON file and hand its parsed contents to onData.
+  function importJson(onData) {
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = "application/json,.json";
+    inp.addEventListener("change", async () => {
+      try {
+        onData(JSON.parse(await inp.files[0].text()));
+      } catch (e) {
+        alert("Could not read that file: " + e.message);
+      }
+    });
+    inp.click();
+  }
+
+  // ---------- plot styling (Plotly) ----------
+
+  const PHI = (1 + Math.sqrt(5)) / 2;
+
+  function axisStyle(extra) {
+    return {
+      gridcolor: cssVar("--grid"),
+      zerolinecolor: cssVar("--rule"),
+      linecolor: cssVar("--rule"),
+      automargin: true,
+      ...extra,
+    };
+  }
+
+  function baseLayout() {
+    return {
+      paper_bgcolor: "rgba(0,0,0,0)",
+      plot_bgcolor: "rgba(0,0,0,0)",
+      font: { family: cssVar("--serif"), color: cssVar("--ink"), size: parseFloat(cssVar("--fs")) },
+      showlegend: false,
+      hovermode: "x unified",
+      hoverlabel: { font: { family: cssVar("--sans"), size: parseFloat(cssVar("--fs")) } },
+    };
+  }
+
+  const PLOT_CONFIG = { displaylogo: false, modeBarButtonsToRemove: ["select2d", "lasso2d"] };
+
+  // Legend above a plot: items are [colour, text, dashed?]
+  function renderLegend(el, items) {
+    el.innerHTML = "";
+    for (const [colour, text, dashed] of items) {
+      const s = document.createElement("span");
+      const i = document.createElement("i");
+      i.style.background = dashed ? `repeating-linear-gradient(90deg, ${colour} 0 3px, transparent 3px 6px)` : colour;
+      s.append(i, document.createTextNode(text));
+      el.appendChild(s);
+    }
+  }
+
+  // Coalesce redraws into one animation frame.
+  function frameScheduler(fn) {
+    let pending = false;
+    return () => {
+      if (pending) return;
+      pending = true;
+      requestAnimationFrame(() => { pending = false; fn(); });
+    };
+  }
+
+  // Redraw when any observed element changes width (plots are sized from their container).
+  function onWidthChange(els, fn) {
+    const lastW = new Map();
+    const ro = new ResizeObserver((entries) => {
+      for (const en of entries) {
+        const w = Math.round(en.contentRect.width);
+        if (lastW.get(en.target) !== w) { lastW.set(en.target, w); fn(); }
+      }
+    });
+    els.forEach((el) => ro.observe(el));
+  }
+
+  // Typeset $…$ in the page body with the review's macros.
+  function renderPageMath(root) {
+    if (!window.renderMathInElement) return;
+    renderMathInElement(root, {
+      delimiters: [
+        { left: "$$", right: "$$", display: true },
+        { left: "$", right: "$", display: false },
+      ],
+      macros: { "\\dd": "\\mathrm{d}" },
+      throwOnError: false,
+    });
+  }
+
+  window.CB = {
+    renderTabs, rng, polyRoots, fmt, cssVar, randomColour, store, tex, slider, select, checkbox, download,
+    heading, segmented, button, escapeHtml, addSavedSet, renderSavedList, importJson,
+    PHI, axisStyle, baseLayout, PLOT_CONFIG, renderLegend, frameScheduler, onWidthChange, renderPageMath,
+  };
 })();
