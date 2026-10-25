@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Control in Biophysics</title>
+  <meta name="description" content="Interactive visualisers for feedback, optimal, model predictive and reinforcement-learning control, companion to the review Control of biophysical dynamics across scales.">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="assets/style.css">
+  <script defer src="assets/common.js"></script>
+  <script>document.addEventListener("DOMContentLoaded", () => CB.renderTabs("home"));</script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-title" href="index.html">Control in biophysics <em>· interactive companion</em></a>
+    <nav class="tabs" id="tabs" aria-label="Frameworks"></nav>
+  </header>
+  <main class="landing">
+    <h1>Control of biophysical dynamics across scales</h1>
+    <p class="lede">Interactive companions to the four control frameworks in the review. Each page runs its case study live in the browser, so you can change parameters and compare runs side by side.</p>
+    <div class="tiles">
+      <a class="card tile" href="pid.html">
+        <div class="tag">Feedback control</div>
+        <h3>PID and the artificial pancreas</h3>
+        <p>Tune proportional, integral and derivative gains on a toy plant and on an identified glucose–insulin model.</p>
+      </a>
+      <div class="card tile soon">
+        <div class="tag">Optimal control · soon</div>
+        <h3>Protein aggregation</h3>
+        <p>Pontryagin's principle and bang-bang dosing.</p>
+      </div>
+      <div class="card tile soon">
+        <div class="tag">Model predictive control · soon</div>
+        <h3>Optogenetic GFP expression</h3>
+        <p>Receding-horizon control with state estimation.</p>
+      </div>
+      <div class="card tile soon">
+        <div class="tag">Reinforcement learning · soon</div>
+        <h3>Adaptive cancer therapy</h3>
+        <p>A learned dosing policy against drug resistance.</p>
+      </div>
+    </div>
+    <p class="site-footer">Source code and notebooks: <a href="https://github.com/dq219/control-in-biophysics">github.com/dq219/control-in-biophysics</a></p>
+  </main>
+</body>
+</html>
