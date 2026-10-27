@@ -316,7 +316,7 @@
   };
 
   function summary(p) {
-    return `${windowText(p)} · umax=${CB.fmt(p.umax)} · ζ=${CB.fmt(p.zeta)} · K=${CB.fmt(p.K)} · T=${CB.fmt(p.T)}`;
+    return `${windowText(p)} · umax=${CB.fmt(p.umax)} · ζ=${CB.fmt(p.zeta)} · Keq=${CB.fmt(p.K)} · T=${CB.fmt(p.T)}`;
   }
 
   function saveCurrent() {
@@ -414,7 +414,7 @@
     CB.renderLegend(legendEl, [
       ...runs.map((r) => [r.colour, r.name]),
       ...(state.showOpt ? [[optC, "Optimal (analytical)", true]] : []),
-      ...(state.showOpen ? [[muted, "Uncontrolled", true]] : []),
+      ...(state.showOpen ? [[muted, "Uncontrolled", "dot"]] : []),
     ]);
 
     drawLandscape(p, land, opt, runs);
@@ -431,8 +431,8 @@
     const traces = [{
       type: "heatmap", x: land.ax, y: land.ax, z: land.z, customdata: land.J,
       colorscale: "Viridis", zsmooth: "best", hoverongaps: false,
-      colorbar: { title: { text: "log<sub>10</sub> <i>J</i>", side: "right" }, thickness: 12, outlinewidth: 0 },
-      hovertemplate: "T₁ %{x:.3f} h, T₂ %{y:.3f} h<br>J = %{customdata:.4g}<extra></extra>",
+      colorbar: { title: { text: "log<sub>10</sub> total cost", side: "right" }, thickness: 12, outlinewidth: 0 },
+      hovertemplate: "T₁ %{x:.3f} h, T₂ %{y:.3f} h<br>total cost %{customdata:.4g}<extra></extra>",
     }];
     for (const r of runs) {
       if (r.params.T !== p.T && !r.current) continue; // a different horizon is a different landscape
@@ -455,7 +455,7 @@
       ["y(T) (nM)", (r) => r.sim.metrics.yT],
       ["∫y dt", (r) => r.sim.metrics.Iy],
       ["ζ∫u dt", (r) => r.sim.metrics.drug],
-      ["cost J", (r) => r.sim.metrics.J],
+      ["total cost", (r) => r.sim.metrics.J],
     ];
     let html = "<table class='metrics'><thead><tr><th>Set</th>" + cols.map((c) => `<th>${c[0]}</th>`).join("") + "</tr></thead><tbody>";
     for (const r of rows) {
@@ -483,7 +483,7 @@
       if (!(opt.raw.dT > 0)) rows.push(["", "no drug is optimal"]);
       else if (opt.raw.dT > p.T) rows.push(["", "dose throughout"]);
     }
-    rows.push(["J^{*}", CB.fmt(cost(d, p, opt.T1, opt.T2).J, 4)]);
+    rows.push(["\\text{total cost}", CB.fmt(cost(d, p, opt.T1, opt.T2).J, 4)]);
     const texOf = (k) => (window.katex ? katex.renderToString(k, { throwOnError: false }) : k);
     derivedBox.innerHTML = rows.map(([k, v]) => `<div><span>${k ? texOf(k) : ""}</span><span class="v">${v}</span></div>`).join("");
   }

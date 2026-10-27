@@ -198,13 +198,13 @@
       ],
       dist: {
         common: [
-          { key: "A", label: "A", min: -3, max: 3, step: 0.01, hint: "disturbance amplitude" },
-          { key: "t0", label: "t_0", min: 0, max: 60, step: 0.1 },
+          { key: "A", label: "\\text{amplitude}", min: -3, max: 3, step: 0.01, hint: "size of the disturbance; negative pushes the other way" },
+          { key: "t0", label: "\\text{onset time}", min: 0, max: 60, step: 0.1, hint: "time at which the disturbance is centred" },
         ],
-        pulse: [{ key: "w", label: "w", min: 0.1, max: 6, step: 0.05, hint: "pulse width" }],
-        step: [{ key: "k", label: "k", min: 0.3, max: 20, step: 0.1, hint: "sigmoid steepness" }],
+        pulse: [{ key: "w", label: "\\text{pulse width}", min: 0.1, max: 6, step: 0.05 }],
+        step: [{ key: "k", label: "\\text{step steepness}", min: 0.3, max: 20, step: 0.1, hint: "how sharply the sigmoid rises" }],
       },
-      sim: [{ key: "T", label: "T", min: 5, max: 60, step: 1, hint: "simulated time" }],
+      sim: [{ key: "T", label: "\\text{duration}", min: 5, max: 60, step: 1, hint: "simulated time" }],
     },
     glucose: {
       tuning: [
@@ -223,19 +223,19 @@
       ],
       dist: {
         meal: [
-          { key: "A", label: "A", unit: "mg/dL", min: 0, max: 300, step: 1, hint: "total glucose of the meal" },
-          { key: "tauM", label: "\\tau_{\\text{meal}}", unit: "min", min: 5, max: 120, step: 1 },
-          { key: "t0h", label: "t_0", unit: "h", min: 0, max: 24, step: 0.25 },
+          { key: "A", label: "\\text{meal size}", unit: "mg/dL", min: 0, max: 300, step: 1, hint: "total glucose of the meal" },
+          { key: "tauM", label: "\\text{meal time constant}", unit: "min", min: 5, max: 120, step: 1, hint: "how long the meal takes to be absorbed" },
+          { key: "t0h", label: "\\text{meal time}", unit: "h", min: 0, max: 24, step: 0.25 },
         ],
         constant: [
-          { key: "Ac", label: "A", unit: "mg/dL per step", min: 0, max: 0.5, step: 0.005, hint: "lost insulin sensitivity as a constant intake" },
-          { key: "t0h", label: "t_0", unit: "h", min: 0, max: 24, step: 0.25 },
+          { key: "Ac", label: "\\text{offset size}", unit: "mg/dL per step", min: 0, max: 0.5, step: 0.005, hint: "lost insulin sensitivity as a constant intake" },
+          { key: "t0h", label: "\\text{onset time}", unit: "h", min: 0, max: 24, step: 0.25, hint: "when the sensitivity is lost" },
         ],
       },
       practical: [
-        { key: "beta", label: "\\beta", min: 0, max: 0.95, step: 0.01, hint: "smoothing of the derivative term (0 = off)" },
+        { key: "beta", label: "\\text{derivative filter}", min: 0, max: 0.95, step: 0.01, hint: "smoothing of the derivative term (0 = off)" },
       ],
-      sim: [{ key: "hours", label: "T", unit: "h", min: 6, max: 72, step: 1, hint: "simulated time" }],
+      sim: [{ key: "hours", label: "\\text{duration}", unit: "h", min: 6, max: 72, step: 1, hint: "simulated time" }],
     },
   };
   SPEC.glucose.dist.meals3 = SPEC.glucose.dist.meal;
@@ -563,7 +563,7 @@
     };
     Plotly.react(mainPlot, traces, layout, CB.PLOT_CONFIG);
 
-    CB.renderLegend(legendEl, [...runs.map((r) => [r.colour, r.name]), ...(state.showOpen ? [[muted, "Uncontrolled", true]] : [])]);
+    CB.renderLegend(legendEl, [...runs.map((r) => [r.colour, r.name]), ...(state.showOpen ? [[muted, "Uncontrolled", "dot"]] : [])]);
     const err = current.sim.error;
     document.getElementById("sim-error").textContent = err ? "Cannot simulate the current set: " + err : "";
 

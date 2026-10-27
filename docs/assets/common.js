@@ -8,7 +8,7 @@
   const TABS = [
     { id: "pid", label: "Feedback (PID)", href: "pid.html" },
     { id: "oc", label: "Optimal control", href: "oc.html" },
-    { id: "mpc", label: "Model predictive control", href: "mpc.html", soon: true },
+    { id: "mpc", label: "Model predictive control", href: "mpc.html" },
     { id: "rl", label: "Reinforcement learning", href: "rl.html" },
   ];
 
@@ -409,16 +409,45 @@
 
   const PLOT_CONFIG = { displaylogo: false, modeBarButtonsToRemove: ["select2d", "lasso2d"] };
 
-  // Legend above a plot: items are [colour, text, dashed?]
+  // Legend above a plot: items are [colour, text, style], style one of "solid" (default), "dash", "dot",
+  // "markers", "lines+markers" (dotted line with markers), "band" (line in a shaded band) or "shade"
+  // (shaded region with an edge); true means "dash". Dash patterns follow Plotly's for a 2px line.
   function renderLegend(el, items) {
     el.innerHTML = "";
-    for (const [colour, text, dashed] of items) {
+    for (const [colour, text, style] of items) {
       const s = document.createElement("span");
-      const i = document.createElement("i");
-      i.style.background = dashed ? `repeating-linear-gradient(90deg, ${colour} 0 3px, transparent 3px 6px)` : colour;
-      s.append(i, document.createTextNode(text));
+      s.append(legendKey(colour, style === true ? "dash" : style || "solid"), document.createTextNode(text));
       el.appendChild(s);
     }
+  }
+
+  function legendKey(colour, style) {
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("width", "26");
+    svg.setAttribute("height", "12");
+    svg.setAttribute("viewBox", "0 0 26 12");
+    const add = (tag, attrs) => {
+      const e = document.createElementNS(NS, tag);
+      for (const [k, v] of Object.entries(attrs)) e.setAttribute(k, v);
+      svg.appendChild(e);
+    };
+    const line = (dash) => add("line", { x1: 1, x2: 25, y1: 6, y2: 6, stroke: colour, "stroke-width": 2.2, ...(dash ? { "stroke-dasharray": dash } : {}) });
+    if (style === "band") {
+      add("rect", { x: 0, y: 1, width: 26, height: 10, fill: colour, "fill-opacity": 0.22 });
+      line();
+    } else if (style === "shade") {
+      add("rect", { x: 0, y: 0, width: 26, height: 12, fill: colour, "fill-opacity": 0.16 });
+      add("line", { x1: 1, x2: 1, y1: 0, y2: 12, stroke: colour, "stroke-width": 1.4 });
+    } else if (style === "markers") {
+      for (const cx of [5, 13, 21]) add("circle", { cx, cy: 6, r: 2, fill: colour });
+    } else if (style === "lines+markers") {
+      line("3,3");
+      for (const cx of [3, 23]) add("circle", { cx, cy: 6, r: 2.6, fill: colour });
+    } else {
+      line({ dash: "9,5", dot: "3,3" }[style]);
+    }
+    return svg;
   }
 
   // Coalesce redraws into one animation frame.

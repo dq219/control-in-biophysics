@@ -116,8 +116,8 @@
       { key: "R0", label: "R(0)", min: 0.001, max: 0.3, step: 0.001, hint: "initial resistant population, as a fraction of the carrying capacity" },
     ],
     rule: [
-      { key: "on", label: "N_{\\text{on}}/N(0)", min: 0.3, max: 1.2, step: 0.01, hint: "treatment starts when the tumour grows to this size" },
-      { key: "off", label: "N_{\\text{off}}/N(0)", min: 0, max: 1.2, step: 0.01, hint: "treatment stops when the tumour shrinks to this size" },
+      { key: "on", label: "\\text{treat from }N/N(0)", min: 0.3, max: 1.2, step: 0.01, hint: "treatment starts when the tumour grows to this size" },
+      { key: "off", label: "\\text{pause at }N/N(0)", min: 0, max: 1.2, step: 0.01, hint: "treatment stops when the tumour shrinks to this size" },
     ],
   };
 
@@ -412,7 +412,7 @@
 
     CB.renderLegend(legendEl, [
       ...(state.showSR ? [[cS, "S(t)/N(0)"], [cR, "R(t)/N(0)"]] : []),
-      [ink, "N(t)/N(0)"], [cDose, "dose"], [ink, "progression threshold", true], [CB.cssVar("--progressed-key"), "progressed"],
+      [ink, "N(t)/N(0)"], [cDose, "dose"], [ink, "progression threshold", true], [CB.cssVar("--progressed-key"), "progressed", "shade"],
     ]);
 
     drawPolicy(p);

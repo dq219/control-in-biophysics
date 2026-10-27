@@ -30,7 +30,7 @@
 
     <main class="main">
       <section class="page-intro">
-        <p>Fibril mass grows as $\dot{y}=\alpha[u]+\kappa[u]\,y$, and the cost $J=\int_{0}^{T}(y+\zeta u)\,\dd t$ weighs aggregate against drug toxicity. Bang-bang dosing gives $u(t)=u_{\text{max}}$ for $T_{1}&lt;t&lt;T_{2}$ and $u(t)=0$ otherwise.
+        <p>Fibril mass grows as $\dot{y}=\alpha[u]+\kappa[u]\,y$, and the total cost $\int_{0}^{T}(y+\zeta u)\,\dd t$ weighs aggregate against drug toxicity. Bang-bang dosing gives $u(t)=u_{\text{max}}$ for $T_{1}&lt;t&lt;T_{2}$ and $u(t)=0$ otherwise.
           <span class="only-primary">A drug targeting primary nucleation has $\alpha[u]=\alpha_{0}/(1+K^{\text{eq}}_{1}u)^{n_{1}}$ and $\kappa=\kappa_{0}$, and the optimum is $T_{1}=0$, $T_{2}=T-\kappa_{0}^{-1}\ln[\zeta u_{\text{max}}\kappa_{0}/(\alpha_{0}-\alpha)]$.</span>
           <span class="only-secondary">A drug targeting secondary nucleation has $\kappa[u]=\kappa_{0}/(1+K^{\text{eq}}_{2}u)^{n_{2}/2}$ and $\alpha=\alpha_{0}$, and the optimum is a window of length $\Delta T=\frac{\kappa_{0}}{\kappa_{0}-\kappa}\big[T-\kappa_{0}^{-1}\ln\frac{\zeta u_{\text{max}}\kappa_{0}^{2}}{\alpha_{0}(\kappa_{0}-\kappa)}\big]$ centred in $[0,T]$.</span>
         </p>
@@ -44,7 +44,7 @@
       <div class="row2">
         <section class="card">
           <h3>Cost landscape</h3>
-          <p class="hint">Total cost $J$ for every dosing window $[T_{1},T_{2}]$ under the current parameters. ★ marks the analytical optimum.</p>
+          <p class="hint">Total cost for every dosing window $[T_{1},T_{2}]$ under the current parameters. ★ marks the analytical optimum.</p>
           <div class="plot-poles" id="plot-landscape"></div>
         </section>
         <section class="card">

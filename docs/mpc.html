@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Model Predictive Control</title>
+  <meta name="description" content="Receding-horizon optogenetic control of GFP expression with a particle filter that tracks drifting parameters, companion to the review Control of biophysical dynamics across scales.">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+  <link rel="stylesheet" href="assets/style.css">
+  <script>try { if (localStorage.getItem("cb.theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}</script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/plotly.js-basic-dist-min@2.35.2/plotly-basic.min.js"></script>
+  <script defer src="assets/common.js"></script>
+  <script defer src="assets/mpc.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-title" href="index.html">Control in biophysics</a>
+    <nav class="tabs" id="tabs" aria-label="Frameworks"></nav>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Model and parameters"></aside>
+
+    <main class="main">
+      <section class="page-intro">
+        <p>Light $u$ drives transcription in the cascade mRNA $R$ → immature GFP $P$ → mature GFP $G$, all in fold changes from the dark steady state: $\dot{R}=d_{r}(1-R)+b_{r}u$, $\dot{P}=(d_{p}+k_{m})(R-P)$, $\dot{G}=d_{p}(P-G)$. Every $\Delta t=10$ min the fluorescence $G$ is read with noise, a particle filter updates its estimates of the state $\bm{y}=[R,P,G]^{T}$ and of the drifting parameters $\bm{w}=[d_{r},d_{p},k_{m},b_{r}]^{T}$, and the controller applies the first step of the plan that minimises $\sum_{k}\big[\tfrac{1}{2}(\bm{y}_{k}-\bm{y}^{*}_{k})^{T}\bm{C}_{y}(\bm{y}_{k}-\bm{y}^{*}_{k})+\tfrac{1}{2}\bm{C}_{u}u_{k}^{2}\big]$ over the prediction horizon under the estimated model. Only $G$ is tracked, so $\bm{C}_{y}$ weights $G$ alone and the target $\bm{y}^{*}_{k}$ sets only its $G$ entry.</p>
+      </section>
+
+      <section class="card">
+        <div class="legend" id="legend"></div>
+        <div class="plot-main" id="plot-main"></div>
+        <div class="scrub">
+          <button type="button" class="btn" id="play">▶ Play</button>
+          <label for="scrub">Plan made at</label>
+          <input type="range" id="scrub" min="0" max="119" step="1">
+          <span class="v" id="scrub-t"></span>
+        </div>
+      </section>
+
+      <section class="card">
+        <h3>Parameter estimates</h3>
+        <p class="hint">Particle-filter estimates of the drifting parameters against their true values. Time in min.</p>
+        <div class="legend" id="param-legend"></div>
+        <div class="param-grid" id="param-grid"></div>
+      </section>
+
+      <section class="card">
+        <h3>Comparison</h3>
+        <p class="hint">Errors are G minus the target, over the run. Parameter errors are relative, at the end of the run.</p>
+        <div class="metrics-wrap" id="metrics"></div>
+      </section>
+
+      <footer class="site-footer">
+        Companion to <em>Control of biophysical dynamics across scales</em>.
+        Source notebook: <a href="https://github.com/dq219/control-in-biophysics/tree/main/ModelPredictiveControl">ModelPredictiveControl/</a>.
+      </footer>
+    </main>
+  </div>
+</body>
+</html>
